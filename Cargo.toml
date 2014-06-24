@@ -1,0 +1,10 @@
+[package]
+
+name = "rust-flac"
+version = "0.1"
+authors = [ "peter@taricorp.net" ]
+
+[[lib]]
+
+name = "flac"
+path = "src/lib.rs"
