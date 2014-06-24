@@ -1,7 +1,7 @@
 [package]
 
 name = "rust-flac"
-version = "0.1"
+version = "0.1.0"
 authors = [ "peter@taricorp.net" ]
 
 [[lib]]
