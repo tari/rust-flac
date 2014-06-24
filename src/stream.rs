@@ -52,7 +52,7 @@ pub enum Metadata {
         /// MIME type of the `data`
         mime: Vec<Ascii>,
         /// Human-readable description of the picture
-        description: ~str,
+        description: String,
         /// Width in pixels
         width: u32,
         /// Height in pixels
@@ -126,15 +126,15 @@ impl StreamInfo {
 
 impl fmt::Show for StreamInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f.buf, "StreamInfo\\{blocks=[{}-{}]s, frames=[{}-{}]B,
-                       sample_rate={}, channels={}, bps={}, samples={}, md5=",
+        try!(write!(f, r"StreamInfo{{blocks=[{}-{}]s, frames=[{}-{}]B,
+                         sample_rate={}, channels={}, bps={}, samples={}, md5=",
                self.block_min, self.block_max, self.frame_min, self.frame_max,
                self.sample_rate, self.channels, self.bps, self.samples));
 
         for &x in self.signature.iter() {
-            try!(write!(f.buf, "{:02X}", x));
+            try!(write!(f, "{:02X}", x));
         }
-        write!(f.buf, "\\}")
+        write!(f, "}}")
     }
 }
 
@@ -147,14 +147,14 @@ fn read_padding_from<R: BitReader>(src: &mut R, len: u32) -> FlacResult<Metadata
 #[deriving(Show)]
 pub struct Comment {
     /// Name of the vendor or tool which created the stream
-    pub vendor: ~str,
+    pub vendor: String,
     /// `=`-delimited set of key-value pairs.
     ///
     /// For example, `["ARTIST=Comaduster","TITLE=Hollow Worlds"]`.
     /// There are no strict limits on fields. Refer to the
     /// [Vorbis comment specification](https://www.xiph.org/vorbis/doc/v-comment.html)
     /// for suggested common field names.
-    pub comments: Vec<~str>
+    pub comments: Vec<String>
 }
 
 impl Comment {
@@ -166,7 +166,7 @@ impl Comment {
 
         let vendor_len = flac_io!(src.read_le_u32());
         let vendor_bytes = flac_io!(src.read_exact(vendor_len as uint));
-        let vendor = str::from_utf8_lossy(vendor_bytes.as_slice()).into_owned();
+        let vendor = str::from_utf8_lossy(vendor_bytes.as_slice()).into_string();
         byte_count += 4 + vendor_len;
 
         let count = flac_io!(src.read_le_u32()) as uint;
@@ -176,7 +176,7 @@ impl Comment {
         for _ in iter::range(0, count) {
             let l = flac_io!(src.read_le_u32());
             let bytes = flac_io!(src.read_exact(l as uint));
-            let s = str::from_utf8_lossy(bytes.as_slice()).into_owned();
+            let s = str::from_utf8_lossy(bytes.as_slice()).into_string();
             comments.push(s);
             byte_count += l + 4;
         }
@@ -208,7 +208,7 @@ pub struct Cuesheet {
 
 impl fmt::Show for Cuesheet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f.buf, "Cuesheet\\{catalog_number=\"{}\", lead_in={}, is_CD={}, tracks={}\\}",
+        write!(f, "Cuesheet{{catalog_number=\"{}\", lead_in={}, is_CD={}, tracks={}}}",
                       self.catalog_number.as_str_ascii(),
                       self.lead_in, self.is_CD, self.tracks)
     }
@@ -244,8 +244,8 @@ pub struct Track {
 
 impl fmt::Show for Track {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f.buf, "Track\\{offset={}, number={}, isrc={}, is_audio={}
-                       pre_emphasis={}, indexes={}\\}",
+        write!(f, "Track{{offset={}, number={}, isrc={}, is_audio={}
+                   pre_emphasis={}, indexes={}}}",
                       self.offset, self.number,
                       self.isrc.as_str_ascii(),
                       self.is_audio, self.pre_emphasis, self.indexes)
@@ -424,7 +424,7 @@ impl<R: Reader> Stream<R> {
         match self.state {
             S_Marker => {
                 let sig = flac_io!(self.src.read_exact(4));
-                assert_sync!(sig.as_slice() == bytes!("fLaC"), "Invalid stream marker");
+                assert_sync!(sig.as_slice() == b"fLaC", "Invalid stream marker");
 
                 self.state = S_StreamInfo;
                 self.next()

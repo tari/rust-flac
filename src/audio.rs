@@ -4,7 +4,7 @@
 //! signal is the sum of values yielded by the predictor and the residual.
 
 /// Signal predictor
-#[deriving(Show, Eq)]
+#[deriving(Show, PartialEq, Eq)]
 pub enum Predictor {
     /// DC, "digital silence"
     Constant(u32),
@@ -30,7 +30,7 @@ pub enum Predictor {
 }*/
 
 /// Difference between signal and predictor
-#[deriving(Show, Eq)]
+#[deriving(Show, PartialEq, Eq)]
 pub enum Residual {
     /// Zero (entire signal is in the predictor)
     NullResidual,
@@ -92,7 +92,7 @@ impl SubFrame {
 }
 
 /// Indicates the stream position of an audio frame
-#[deriving(Show, Eq)]
+#[deriving(Show, PartialEq, Eq)]
 pub enum FrameIndex {
     /// Fixed blocksize stream
     ///
@@ -115,7 +115,7 @@ pub enum FrameIndex {
 /// For example, Given a Left/Side encoding of `(54, -4)`, the left channel's
 /// value is 54 and the right is 50. With Mid/Side, the left would be 52 and
 /// right 56 given the same values.
-#[deriving(Show, Eq)]
+#[deriving(Show, PartialEq, Eq)]
 pub enum ChannelSpec {
     /// Channels are encoded independently
     ///

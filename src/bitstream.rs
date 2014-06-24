@@ -1,6 +1,5 @@
 use std::cmp;
 use std::mem::size_of;
-use std::num::Bitwise;
 use std::io::IoResult;
 
 use super::{FlacResult, FramingError, IoError};

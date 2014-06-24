@@ -9,7 +9,7 @@
 //! 
 
 #![feature(phase)]
-#[phase(syntax,link)] extern crate log;
+#[phase(plugin,link)] extern crate log;
 
 use std::io;
 
@@ -31,7 +31,7 @@ mod crc;
 pub type FlacResult<T> = Result<T, FlacErr>;
 
 /// Decoder errors
-#[deriving(Clone, Eq, Show)]
+#[deriving(Clone, PartialEq, Show)]
 pub enum FlacErr {
     /// An expected stream structure was not found or was invalid.
     /// The contained string provides a human-readable error message.
