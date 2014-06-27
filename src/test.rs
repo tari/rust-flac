@@ -1,5 +1,5 @@
 #![feature(phase)]
-#[phase(syntax,link)] extern crate log;
+#[phase(plugin,link)] extern crate log;
 
 extern crate flac;
 use flac::audio;
@@ -12,7 +12,7 @@ use std::io::File;
 fn decode_silence() {
     // Pure silence, 16 bit 44.1 kHz, 1 second.
     // Encoding is 4-kibisample frames, all with SUBFRAME_CONSTANT
-    let f = File::open(&Path::new("tests/silence.flac"));
+    let f = File::open(&Path::new("../tests/silence.flac"));
     let mut s = Stream::new(f);
 
     let streaminfo = match s.next() {
@@ -36,7 +36,7 @@ fn decode_silence() {
     assert_eq!(audio.sample_size, 16);
 
     assert_eq!(audio.subframes.len(), 1);
-    let &(ref predictor, wasted, ref residual) = audio.subframes.get(0);
+    let &audio::SubFrame(ref predictor, wasted, ref residual) = audio.subframes.get(0);
     assert_eq!(*predictor, audio::Constant(0));
     assert_eq!(wasted, 0);
     assert_eq!(*residual, audio::NullResidual);
