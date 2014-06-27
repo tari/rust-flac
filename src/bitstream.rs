@@ -49,10 +49,10 @@ impl<R: Reader> BitSource<R> {
 
 impl<R: Reader> BitReader for BitSource<R> {
     fn align(&mut self) -> (uint, u8) {
-        let padding = self.cache_avail % 8;
+        let padding = self.cache_avail as uint % 8;
         let values = self.cache & ((1 << padding) - 1);
         self.cache >>= padding;
-        self.cache_avail -= padding;
+        self.cache_avail -= padding as u8;
 
         (padding as uint, values as u8)
     }
@@ -70,11 +70,11 @@ impl<R: Reader> BitReader for BitSource<R> {
             try!(self.fill_buffer());
         }
         // Get top n bits of cache
-        let mask = (1u64 << n) - 1;
+        let mask = (1u64 << n as uint) - 1;
         let shift = self.cache_avail - n;
-        let out = (self.cache >> shift) & mask;
+        let out = (self.cache >> shift as uint) & mask;
         self.cache_avail -= n;
-        self.cache &= !(mask << shift);
+        self.cache &= !(mask << shift as uint);
 
         let out: T = NumCast::from(out).unwrap();
         Ok(out)
@@ -135,7 +135,7 @@ pub fn utf8_uint_from<R: Reader>(src: &mut R) -> FlacResult<u64> {
         nlo
     };
     // Will take the low-order 7-nlo bits of `first`
-    let first_mask = (1 << (7 - nlo)) - 1;
+    let first_mask = (1 << (7 - nlo) as uint) - 1;
 
     let mut out: u64 = (first & first_mask) as u64;
     for _ in ::std::iter::range(1, len) {

@@ -361,10 +361,10 @@ impl<R: Reader> Stream<R> {
 
         let blocksize = match blocksize_spec {
             1 => 192,
-            n @ 2..5 => 576 * (1 << (n - 2)),
+            n @ 2..5 => 576 * (1 << (n - 2) as uint),
             6 => flac_io!(filter.read_byte()) as u32 + 1,
             7 => flac_io!(filter.read_be_u16()) as u32 + 1,
-            n @ 8..15 => 256 * (1 << (n - 8)),
+            n @ 8..15 => 256 * (1 << (n - 8) as uint),
             _ => unreachable!()
         };
 
