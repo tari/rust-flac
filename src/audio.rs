@@ -7,7 +7,7 @@
 #[deriving(Show, PartialEq, Eq)]
 pub enum Predictor {
     /// DC, "digital silence"
-    Constant(u32),
+    Constant(i32),
     /// Fixed linear predictor of order 0-3
     /// 
     /// (order, warmup_samples)
@@ -58,12 +58,20 @@ pub struct Audio {
 impl Audio {
     /// Decode the frame into raw samples
     ///
-    /// `data` is a vector of channels, each of which must be at least
-    /// `self.size` items large. Items beyond the frame's length in each
-    /// channel are not modified.
+    /// `data` is a vector of channels, each of which receives the contents
+    /// of the corresponding numbered subframe.
     pub fn decode_into(&self, data: &mut Vec<Vec<i32>>) {
-        for (i, channel) in data.mut_iter().enumerate() {
-            self.subframes.get(i).decode_into(channel.as_mut_slice());
+        for (subframe, out) in self.subframes.iter()
+                                             .zip(data.mut_iter()) {
+            let size = self.size as uint;
+            if out.len() < size {
+                out.reserve_exact(size);
+                // Safe because subframe.decode_into never reads from this
+                unsafe { out.set_len(size); }
+            } else if out.len() > size {
+                out.truncate(size);
+            }
+            subframe.decode_into(out.as_mut_slice());
         }
     }
 
@@ -84,10 +92,23 @@ pub struct SubFrame(pub Predictor, pub u8, pub Residual);
 impl SubFrame {
     /// Decompresses audio data into 32-bit samples.
     /// 
-    /// `data` must be large enough to hold the entire subframe.
-    #[allow(unused_variable)]
+    /// `data` must be large enough to hold the entire subframe. This function
+    /// is guaranteed never to read from `data`, so the values therein may be
+    /// uninitialized.
     pub fn decode_into(&self, data: &mut [i32]) {
+        let &SubFrame(ref predictor, wasted, ref residual) = self;
 
+        match predictor {
+            &Constant(x) => {
+                for y in data.mut_iter() {
+                    *y = x;
+                }
+            },
+            &Verbatim(ref verbatim) => {
+                data.as_mut_slice().copy_from(verbatim.as_slice());
+            },
+            p => fail!("Decode for subframe {} not implemented.", p)
+        }
     }
 }
 

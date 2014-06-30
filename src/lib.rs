@@ -27,6 +27,9 @@ pub mod audio;
 
 mod crc;
 
+#[cfg(test)]
+mod test;
+
 /// Error/Ok indicator
 pub type FlacResult<T> = Result<T, FlacErr>;
 
@@ -42,3 +45,30 @@ pub enum FlacErr {
     CrcError
 }
 
+/// A simple FLAC decoder
+pub struct Decoder<R> {
+    stream: stream::Stream<R>,
+    buffers: Vec<Vec<i32>>
+}
+
+impl<R: Reader> Decoder<R> {
+    /// Construct a Decoder from a Reader.
+    pub fn new(reader: R) -> Decoder<R> {
+        Decoder {
+            stream: stream::Stream::new(reader),
+            buffers: Vec::new()
+        }
+    }
+
+    /// Decode the next frame of audio samples from the stream.
+    pub fn next<'a>(&'a mut self) -> FlacResult<&'a Vec<Vec<i32>>> {
+        let frame = try!(self.stream.next());
+        match frame {
+            stream::MetadataBlock(_) => self.next(),
+            stream::AudioFrame(a) => {
+                a.decode_into(&mut self.buffers);
+                Ok(&self.buffers)
+            }
+        }
+    }
+}

@@ -508,7 +508,7 @@ fn read_predictor<R: BitReader>(s_type: u8,
                                 bps: u8,
                                 blocksize: u32) -> FlacResult<Predictor> {
     let pred = match s_type {
-        0 => Constant(flac_io!(src.read_bits::<u32>(bps))),
+        0 => Constant(sext(flac_io!(src.read_bits(bps)), bps)),
         1 => Verbatim(try!(read_raw_samples(src, bps, blocksize))),
         x @ 8..15 => {
             let order = x & 7;

@@ -1,18 +1,14 @@
-#![feature(phase)]
-#[phase(plugin,link)] extern crate log;
-
-extern crate flac;
-use flac::audio;
-use flac::stream::Stream;
-use flac::stream::{MetadataBlock, AudioFrame};
-use flac::stream::MStreamInfo;
+use super::audio;
+use super::stream::Stream;
+use super::stream::{MetadataBlock, AudioFrame};
+use super::stream::MStreamInfo;
 use std::io::File;
 
 #[test]
 fn decode_silence() {
     // Pure silence, 16 bit 44.1 kHz, 1 second.
     // Encoding is 4-kibisample frames, all with SUBFRAME_CONSTANT
-    let f = File::open(&Path::new("../tests/silence.flac"));
+    let f = File::open(&Path::new("tests/silence.flac"));
     let mut s = Stream::new(f);
 
     let streaminfo = match s.next() {
